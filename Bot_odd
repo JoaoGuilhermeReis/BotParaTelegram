@@ -1,0 +1,67 @@
+#Bot odd jogos
+
+
+TOKEN = 'SEU_TOKEN_DO_BOT_TELEGRAM'
+ODDS_API_KEY = 'SUA_CHAVE_DA_API'
+
+nome do arquivo: 
+utils/fetch_odds.py
+
+import requests
+from config import ODDS_API_KEY
+
+def buscar_odds(esporte='soccer'):
+    url = f'https://api.the-odds-api.com/v4/sports/{esporte}/odds?regions=eu&markets=h2h&apiKey={ODDS_API_KEY}'
+
+    try:
+        response = requests.get(url)
+        dados = response.json()
+
+        if not dados:
+            return "Nenhuma odd disponível no momento."
+
+        mensagens = []
+        for jogo in dados[:5]:  # Mostra até 5 jogos
+            teams = jogo['teams']
+            odds = jogo['bookmakers'][0]['markets'][0]['outcomes']
+
+            texto = (
+                f"🏟️ *{teams[0]} vs {teams[1]}*\n"
+                f"📅 {jogo['commence_time'][:10]} ⏰ {jogo['commence_time'][11:16]}\n\n"
+                f"🔹 {odds[0]['name']}: *{odds[0]['price']}*\n"
+                f"🔹 {odds[1]['name']}: *{odds[1]['price']}*\n"
+            )
+            mensagens.append(texto)
+        
+        return "\n\n".join(mensagens)
+
+    except Exception as e:
+        return f"Erro ao buscar odds: {e}"
+
+
+nome do arquivo: main.py
+
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from config import TOKEN
+from utils.fetch_odds import buscar_odds
+
+# Comando principal
+async def odds(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    esporte = 'soccer'  # padrão
+    if context.args:
+        esporte = context.args[0].lower()
+
+    msg = buscar_odds(esporte)
+    await update.message.reply_text(msg, parse_mode='Markdown')
+
+# Inicializa o bot
+app = ApplicationBuilder().token(TOKEN).build()
+app.add_handler(CommandHandler("odds", odds))
+app.run_polling()
+
+
+Exemplo de uso: 
+/odds soccer
+/odds basketball
+
