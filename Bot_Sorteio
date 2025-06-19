@@ -1,5 +1,8 @@
 #Bot de sorteio do telegram
 
+**Codigo feito pelo chatgpt** 
+Utilizei o gpt para fins de estudo e testes para o meu portfolio, este não é o codigo original
+
 **TOKEN = 'SEU_TOKEN_AQUI'**
 
 import json, random, asyncio
